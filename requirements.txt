@@ -1,0 +1,6 @@
+aiogram==3.18.0
+environs==14.1.1
+SQLAlchemy==2.0.38
+pytz==2025.1
+APScheduler==3.11.0
+asyncpg==0.30.0
