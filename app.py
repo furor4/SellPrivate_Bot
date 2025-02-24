@@ -20,16 +20,14 @@ async def main():
     dp.callback_query.middleware(DatabaseMiddleware())
     dp.include_routers(start.router, without_adding.router, tariff.router, stats.router, purchased.router,
                        sub_info.router, expiration_check.router)
-    try:
-        scheduler.add_job(check_subscriptions, 'cron', hour=10, minute=00)  # Проверка на то, остался ли день до окончания подписки. Ежедневно в 10:00
-        scheduler.add_job(check_expired_subscriptions, 'interval', minutes=15)  # Проверка на уже истечённую подписку каждые 15 минут
-        scheduler.start()
-        await bot.delete_webhook(drop_pending_updates=True)
-        print(f'Запущено.')
-        await dp.start_polling(bot)
-
-    except Exception as e:
-        logging.exception(f"Ошибка при запуске бота: {e}")
+    
+    scheduler.add_job(check_subscriptions, 'cron', hour=10, minute=00)  # Проверка на то, остался ли день до окончания подписки. Ежедневно в 10:00
+    scheduler.add_job(check_expired_subscriptions, 'interval', minutes=15)  # Проверка на уже истечённую подписку каждые 15 минут
+    scheduler.start()
+    
+    await bot.delete_webhook(drop_pending_updates=True)
+    print(f'Запущено.')
+    await dp.start_polling(bot)
 
 
 if __name__ == '__main__':
