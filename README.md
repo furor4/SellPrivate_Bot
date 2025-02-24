@@ -53,7 +53,7 @@
     PRIVATE_CHAT_ID='ID чата канала' (если таковой существует)
     ```
     
-5. В файле db/models.py измените строку подключения к базе данных PostgreSQL:
+5. В файле `db/models.py` измените строку подключения к базе данных PostgreSQL:
 
    ```
    DATABASE_URL = "postgresql+asyncpg://postgres:ВАШ ПАРОЛЬ@127.0.0.1:5432/ИМЯ БАЗЫ ДАННЫХ"
