@@ -1,7 +1,13 @@
+from datetime import datetime, timedelta
+from typing import Optional
+
 from aiogram import Router, F
 from aiogram.enums import ParseMode
 from aiogram.types import InlineKeyboardMarkup, CallbackQuery, InlineKeyboardButton
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from db.models import PriceData
 from filters.is_private import PrivateChatFilter
 
 router = Router()
@@ -9,14 +15,25 @@ router = Router()
 
 # Класс тарифа
 class Tariff:
-    def __init__(self, name: str, price: str, duration: str, callback_data):
+    def __init__(self, name: str, price: int, duration: str, callback_data):
         self.name = name
         self.price = price
         self.duration = duration
         self.callback_data = callback_data
 
+    def update_price(self, new_price: int):
+        self.price = new_price
+
+    def get_expiration_date(self, from_date: datetime) -> datetime:
+        if self.duration == "1 месяц":
+            return from_date + timedelta(days=31)
+        elif self.duration == "6 месяцев":
+            return from_date + timedelta(days=6 * 31)
+        else:
+            return from_date + timedelta(days=365)
+
     def get_payment_message(self):
-        return (f'<blockquote><b>💰 Цена доступа:</b> <code>{self.price}</code></blockquote>'
+        return (f'<blockquote><b>💰 Цена доступа:</b> <code>{self.price}₽</code></blockquote>'
                 f'\n<blockquote><b>🔋 Тариф:</b> <code>{self.duration}</code></blockquote>'
                 f'\n————————————————————————'
                 f'\n<blockquote><b>‼️ Пожалуйста, переведите указанную выше сумму на данные'
@@ -27,23 +44,34 @@ class Tariff:
 
 # Управление тарифами (с возможностью добавить новые)
 class TariffManager:
-    def __init__(self):
+    def __init__(self, session: AsyncSession):
+        self.session = session
+        self.tariffs = {}
+
+    async def load_prices(self):
+        price_data = await self.session.scalar(select(PriceData))
+        if not price_data:
+            price_data = PriceData()
+            self.session.add(price_data)
+            await self.session.commit()
+            await self.session.refresh(price_data)
+
         self.tariffs = {
             'month': Tariff(
                 name='🌙 Месяц',
-                price='200₽',
+                price=price_data.month,
                 duration='1 месяц',
                 callback_data='buy_confirm_month'
             ),
             'sixmonth': Tariff(
                 name='🌕 6 месяцев',
-                price='900₽',
+                price=price_data.sixmonth,
                 duration='6 месяцев',
                 callback_data='buy_confirm_sixmonth'
             ),
             'year': Tariff(
                 name='🌚 1 год',
-                price='1200₽',
+                price=price_data.year,
                 duration='1 год',
                 callback_data='buy_confirm_year'
             )
@@ -68,6 +96,27 @@ class TariffManager:
         kb = InlineKeyboardMarkup(inline_keyboard=inline_keyboard)
         return kb
 
+    async def update_tariff_price(self, tariff_name: str, new_price: int):
+        price_data = await self.session.scalar(select(PriceData))
+        if not price_data:
+            price_data = PriceData()
+            self.session.add(price_data)
+
+        if tariff_name == 'month':
+            price_data.month = new_price
+        elif tariff_name == 'sixmonth':
+            price_data.sixmonth = new_price
+        elif tariff_name == 'year':
+            price_data.year = new_price
+        else:
+            return False
+
+        if tariff_name in self.tariffs:
+            self.tariffs[tariff_name].update_price(new_price)
+
+        await self.session.commit()
+        return True
+
     async def send_tariff_selection_message(self, cq: CallbackQuery):  # Отправляет сообщение с предложением выбрать тариф
         text = '<b>💡 Прошу, выберите интересующий вас тариф ниже:</b>'
 
@@ -88,7 +137,13 @@ class TariffManager:
         await cq.message.edit_text(text=text, reply_markup=kb, parse_mode=ParseMode.HTML)
 
 
-tariff_manager = TariffManager()
+tariff_manager: Optional['TariffManager'] = None
+
+
+async def init_tariffs(session: AsyncSession):
+    global tariff_manager
+    tariff_manager = TariffManager(session)
+    await tariff_manager.load_prices()
 
 
 @router.callback_query(PrivateChatFilter(), F.data == 'choosing_tariff')
