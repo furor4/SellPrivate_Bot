@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from aiogram import Router, F
 from aiogram.enums import ParseMode
@@ -10,7 +10,7 @@ from config import bot, OWNER_ID, CHANNEL_ID, MSK
 from db.models import Users, Stats
 from filters.is_owner import IsOwner
 from filters.is_private import PrivateChatFilter
-from handlers.user.tariff import tariff_manager
+from handlers.user.tariff import tariff_manager, Tariff
 
 router = Router()
 
@@ -30,15 +30,10 @@ async def confirm_payment(cq: CallbackQuery, session: AsyncSession):
     await bot.delete_message(chat_id=cq.message.chat.id, message_id=cq.message.message_id)
 
     msk = datetime.now(MSK).strftime("%Y-%m-%d %H:%M:%S")
-    if tariff_type == 'month':
-        tariff_text = "🌙 Месяц"
-        tariff_price = "200"
-    elif tariff_type == 'sixmonth':
-        tariff_text = "🌕 6 месяцев"
-        tariff_price = "900"
-    else:
-        tariff_text = "🌚 1 год"
-        tariff_price = "1200"
+    tariff_obj = tariff_manager.get_tariff(tariff_type)
+    tariff_text = tariff_obj.name
+    tariff_price = tariff_obj.price
+
     admin_message = (f"💸 <b>У вас покупка!</b> <u>Пожалуйста, подтвердите поступление средств.</u>"
                      f"\n\n<blockquote><b>👤 Покупатель:</b> <a href='tg://user?id={user.user_id}'>{user.fullname}"
                      f"</a></blockquote>"
@@ -55,7 +50,7 @@ async def confirm_payment(cq: CallbackQuery, session: AsyncSession):
 
 
 @router.callback_query(PrivateChatFilter(), IsOwner(), F.data.startswith('admin_confirm_payment_'))  # Владелец подтвердил платёж
-async def admin_confirm_payment(cq: CallbackQuery, session: AsyncSession):
+async def admin_confirm_payment(cq: CallbackQuery, session: AsyncSession, tariff: Tariff):
     user_id, tariff_type = cq.data.split('_')[3:5]
     user_id = int(user_id)
 
@@ -69,18 +64,11 @@ async def admin_confirm_payment(cq: CallbackQuery, session: AsyncSession):
     )
     invite_link = invite_link_obj.invite_link  # Сгенерирована одноразовая ссылка в канал
 
-    current_date = datetime.now(MSK)
-
-    if tariff_type == 'month':
-        expiration_date = current_date + timedelta(days=31)
-    elif tariff_type == 'sixmonth':
-        expiration_date = current_date + timedelta(days=6 * 31)
-    else:
-        expiration_date = current_date + timedelta(days=365)
+    expiration_date = tariff.get_expiration_date(datetime.now(MSK))
 
     user.time_sub = expiration_date  # Установка даты окончания срока подписки
     user.tariff = tariff_type  # Установка за пользователем купленного тарифа в БД
-    tariff = tariff_manager.get_tariff(user.tariff)
+    tariff = tariff_manager.get_tariff(tariff_type)
 
     stats = (await session.execute(select(Stats).where(Stats.id == 1))).scalar_one_or_none()
     if not stats:
@@ -88,7 +76,7 @@ async def admin_confirm_payment(cq: CallbackQuery, session: AsyncSession):
         session.add(stats)
         await session.commit()
 
-    stats.total_money += int(tariff.price[:-1])
+    stats.total_money += tariff.price
     if tariff_type == 'month':
         stats.monthly_subs += 1
     elif tariff_type == 'sixmonth':
