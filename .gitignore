@@ -1,0 +1,11 @@
+__pycache__/
+*.py[cod]
+*.pyo
+
+.venv/
+
+.idea/
+
+*.tmp
+
+*.env
