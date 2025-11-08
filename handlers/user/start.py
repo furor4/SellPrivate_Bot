@@ -1,6 +1,6 @@
-from aiogram import Router, F
+from aiogram import Router
 from aiogram.enums import ParseMode
-from aiogram.filters import Command
+from aiogram.filters import CommandStart
 from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -11,7 +11,7 @@ from filters.is_private import PrivateChatFilter
 router = Router()
 
 
-@router.message(PrivateChatFilter(), Command('start'))
+@router.message(PrivateChatFilter(), CommandStart())
 async def start(message: Message, session: AsyncSession):
     user_id = message.from_user.id
     fullname = message.from_user.full_name
@@ -34,6 +34,6 @@ async def start(message: Message, session: AsyncSession):
         ]
     )
 
-    text = '<b>Приветствую!</b> Я - бот для покупки доступа к (выберите свой ресурс, к которому человек получает доступ)'
+    text = '...'  # Сюда введите свой текст, который бот отправляет при старте
 
     await message.reply(text, reply_markup=kb, parse_mode=ParseMode.HTML)
