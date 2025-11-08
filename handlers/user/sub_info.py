@@ -34,8 +34,10 @@ async def info_sub(message: Message, session: AsyncSession):
 
     days = time_left.days
     hours = time_left.seconds // 3600
+    minutes = (time_left.seconds % 3600) // 60
 
     await message.answer(f"<b>💎 Информация о подписке:</b>\n\n"
                          f"<blockquote>🔋 <b>Текущий тариф:</b> <code>{tariff.name}</code></blockquote>\n"
-                         f"<blockquote>⏳ <b>Время до окончания тарифа:</b> <code>{days}д. {hours}ч.</code></blockquote>",
+                         f"<blockquote>⏳ <b>Время до окончания тарифа:</b> <code>{days}д. {hours}ч. {minutes}м.</code>"
+                         f"</blockquote>",
                          parse_mode=ParseMode.HTML)
