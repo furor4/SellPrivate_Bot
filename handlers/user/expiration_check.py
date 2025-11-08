@@ -89,8 +89,7 @@ async def ban_user(user_id: int, chat_id: int):
             user_id=user_id
         )
     except Exception as e:
-        print(
-            f"Не удалось кикнуть пользователя {user_id} из ресурса {chat_id}: {e}")  # Человека может не быть в чате (если чат существует)
+        print(f"Не удалось кикнуть пользователя {user_id} из ресурса {chat_id}: {e}")
 
 
 @router.callback_query(PrivateChatFilter(), F.data == "cancel_subscription")  # Отмена подписки
