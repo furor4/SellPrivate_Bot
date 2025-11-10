@@ -56,7 +56,7 @@ async def cancel_subscription_confirm(cq: CallbackQuery):
          InlineKeyboardButton(text="✅ Да, уверен(-а)", callback_data="cancel_subscription")]
     ])
 
-    await cq.message.edit_text("❓ <b>Вы уверены, что хотите отменить подписку на NSFW?</b>", reply_markup=kb,
+    await cq.message.edit_text("❓ <b>Вы уверены, что хотите отменить подписку?</b>", reply_markup=kb,
                                parse_mode=ParseMode.HTML)
 
 
@@ -109,7 +109,7 @@ async def cancel_subscription(cq: CallbackQuery, session: AsyncSession):
     user.link = None
     await session.commit()
 
-    await cq.message.edit_text("🚩 <b>Подписка была успешно отменена. С нетерпением жду вашей следующей покупки!</b>",
+    await cq.message.edit_text("🚩 <b>Подписка была успешно отменена. С нетерпением ждём вашей следующей покупки!</b>",
                                reply_markup=None, parse_mode=ParseMode.HTML)
 
 
