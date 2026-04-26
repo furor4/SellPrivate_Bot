@@ -1,7 +1,10 @@
+import asyncio
+import logging
 from datetime import datetime, timedelta
 
 from aiogram import Router, F
 from aiogram.enums import ParseMode
+from aiogram.exceptions import TelegramBadRequest, TelegramForbiddenError, TelegramRetryAfter
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -121,19 +124,36 @@ async def check_expired_subscriptions():
         expired_users = (await session.execute(select(Users).where(Users.time_sub <= now,
                                                                    Users.tariff != None))).scalars().all()
         for user in expired_users:
-            await ban_user(user.user_id, CHANNEL_ID)
-            await ban_user(user.user_id, CHAT_ID)
-            await bot.revoke_chat_invite_link(chat_id=CHANNEL_ID, invite_link=user.link)
+            try:
+                await ban_user(user.user_id, CHANNEL_ID)
+                await ban_user(user.user_id, CHAT_ID)
 
-            user.tariff = None
-            user.time_sub = None
-            user.link = None
-            await session.commit()
+                if user.link:
+                    try:
+                        await bot.revoke_chat_invite_link(chat_id=CHANNEL_ID, invite_link=user.link)
+                    except TelegramBadRequest:
+                        pass
 
-            await bot.send_message(
-                chat_id=user.user_id,
-                text="<b>😔 Упс! Кажется, ваша подписка истекла!</b>"
-                     "\n\n<blockquote><b><u>💙 Но не переживай!</u> Ты всегда можешь вернуть себе доступ к "
-                     "эксклюзивному контенту, прописав команду</b> /start.</blockquote>",
-                parse_mode=ParseMode.HTML
-            )
+                user.tariff = None
+                user.time_sub = None
+                user.link = None
+                await session.commit()
+
+                try:
+                    await bot.send_message(
+                        chat_id=user.user_id,
+                        text="<b>😔 Упс! Кажется, ваша подписка истекла!</b>"
+                             "\n\n<blockquote><b><u>💙 Но не переживай!</u> Ты всегда можешь вернуть себе доступ к "
+                             "эксклюзивному контенту, прописав команду</b> /start.</blockquote>",
+                        parse_mode=ParseMode.HTML
+                    )
+                except TelegramForbiddenError:
+                    logging.info(f"Пользователь {user.user_id} заблокировал бота. Уведомление не отправлено.")
+                except TelegramRetryAfter as e:
+                    await asyncio.sleep(e.retry_after)
+                except TelegramBadRequest as e:
+                    logging.error(f"Ошибка при отправке {user.user_id}: {e}")
+
+            except Exception as e:
+                logging.exception(f"Ошибка при обработке юзера {user.user_id}: {e}")
+                await session.rollback()
