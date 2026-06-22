@@ -50,7 +50,7 @@ async def successful_payment(message: Message, session: AsyncSession):
 
     if user.link:
         await message.answer("✅ <b>Платёж подтверждён!</b>\n"
-                             f"Ваша подписка успешно продлена на {tariff.duration}.\n\n"
+                             f"Ваша подписка успешно продлена до {expiration_date.strftime('%d.%m.%Y %H:%M')}.\n\n"
                              f"Ваша ссылка для входа: {user.link}", parse_mode=ParseMode.HTML)
     else:
         user.link = invite_link
