@@ -1,22 +1,13 @@
-FROM astral-sh/uv:python3.13-alpine AS builder
+FROM python:3.13-slim
+
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
 WORKDIR /app
-
-ENV UV_COMPILE_BYTECODE=1
-ENV UV_LINK_MODE=copy
 
 COPY pyproject.toml uv.lock ./
 
-RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync --frozen --no-install-project --no-dev
-
-FROM python:3.13-alpine
-
-WORKDIR /app
-
-COPY --from=builder /app/.venv /app/.venv
-ENV PATH="/app/.venv/bin:$PATH"
+RUN uv pip install --system --no-cache -r pyproject.toml
 
 COPY . .
 
-CMD ["python3.13", "app.py"]
+CMD ["python", "app.py"]
