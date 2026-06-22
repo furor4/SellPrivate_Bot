@@ -13,10 +13,10 @@ async_session = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit
 
 
 class DatabaseMiddleware(BaseMiddleware):  # Мидлварь для внедрения сессии базы данных в обработчики
-    async def __call__(self, handler, event: TelegramObject, dict: dict):
+    async def __call__(self, handler, event: TelegramObject, data: dict):
         async with async_session() as session:
-            dict["session"] = session
-            return await handler(event, dict)
+            data["session"] = session
+            return await handler(event, data)
 
 
 class Users(Base):
