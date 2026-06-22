@@ -1,6 +1,7 @@
 from aiogram import Router
 from aiogram.filters import Command
 from aiogram.types import Message
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from filters.is_owner import IsOwner
 from filters.is_private import PrivateChatFilter
@@ -9,7 +10,7 @@ from handlers.user.tariff import tariff_manager
 router = Router()
 
 @router.message(PrivateChatFilter(), IsOwner(), Command("setprice"))
-async def set_tariff_price(message: Message):
+async def set_tariff_price(message: Message, session: AsyncSession):
     try:
         args = message.text.split()
         if len(args) != 3:
@@ -18,7 +19,7 @@ async def set_tariff_price(message: Message):
         tariff_name = args[1]
         new_price = int(args[2])
 
-        success = await tariff_manager.update_tariff_price(tariff_name, new_price)
+        success = await tariff_manager.update_tariff_price(tariff_name, new_price, session)
         if success:
             await message.answer(f"✅ Цена тарифа {tariff_name} успешно изменена на {new_price}₽")
         else:
