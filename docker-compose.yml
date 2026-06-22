@@ -1,0 +1,28 @@
+services:
+  postgres_db:
+    image: postgres:15-alpine
+    container_name: subscription_bot_db
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  bot:
+    build: .
+    container_name: subscription_bot
+    restart: always
+    depends_on:
+      postgres_db:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${DB_USER}:${DB_PASSWORD}@postgres_db:5432/${DB_NAME}
+
+volumes:
+  pgdata:
