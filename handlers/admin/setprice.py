@@ -21,7 +21,7 @@ async def set_tariff_price(message: Message, session: AsyncSession):
 
         success = await tariff_manager.update_tariff_price(tariff_name, new_price, session)
         if success:
-            await message.answer(f"✅ Цена тарифа {tariff_name} успешно изменена на {new_price}₽")
+            await message.answer(f"✅ Цена тарифа {tariff_name} успешно изменена на {new_price}⭐️")
         else:
             await message.answer("❌ Тариф с таким названием не найден. Доступные тарифы: month, sixmonth, year")
 
