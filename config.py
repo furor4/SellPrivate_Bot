@@ -15,7 +15,7 @@ DB_USER = env.str('DB_USER')
 DB_PASSWORD = env.str('DB_PASSWORD')
 DB_NAME = env.str('DB_NAME')
 
-DATABASE_URL = env.str('DATABASE_URL', f"postgresql+asyncpg://{DB_USER}:{DB_PASSWORD}@127.0.0.1:5432/{DB_NAME}")
+DATABASE_URL = env.str(f'postgresql+asyncpg://{DB_USER}:{DB_PASSWORD}@postgres_db:5432/{DB_NAME}')
 
 MSK = pytz.timezone('Europe/Moscow')  # Время по МСК
 bot = Bot(token=TOKEN)
