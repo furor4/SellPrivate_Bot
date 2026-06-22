@@ -32,9 +32,9 @@ class Users(Base):
 class PriceData(Base):
     __tablename__ = "price_data"
     id = Column(Integer, primary_key=True, autoincrement=True)
-    month = Column(Integer, default=200)
-    sixmonth = Column(Integer, default=900)
-    year = Column(Integer, default=1200)
+    month = Column(Integer, default=100)
+    sixmonth = Column(Integer, default=500)
+    year = Column(Integer, default=1000)
 
 
 class Stats(Base):
