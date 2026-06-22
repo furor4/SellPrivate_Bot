@@ -44,17 +44,16 @@ class Tariff:
 
 # Управление тарифами (с возможностью добавить новые)
 class TariffManager:
-    def __init__(self, session: AsyncSession):
-        self.session = session
+    def __init__(self):
         self.tariffs = {}
 
-    async def load_prices(self):
-        price_data = await self.session.scalar(select(PriceData))
+    async def load_prices(self, session: AsyncSession):
+        price_data = await session.scalar(select(PriceData))
         if not price_data:
             price_data = PriceData()
-            self.session.add(price_data)
-            await self.session.commit()
-            await self.session.refresh(price_data)
+            session.add(price_data)
+            await session.commit()
+            await session.refresh(price_data)
 
         self.tariffs = {
             'month': Tariff(
@@ -96,11 +95,11 @@ class TariffManager:
         kb = InlineKeyboardMarkup(inline_keyboard=inline_keyboard)
         return kb
 
-    async def update_tariff_price(self, tariff_name: str, new_price: int):
-        price_data = await self.session.scalar(select(PriceData))
+    async def update_tariff_price(self, tariff_name: str, new_price: int, session: AsyncSession):
+        price_data = await session.scalar(select(PriceData))
         if not price_data:
             price_data = PriceData()
-            self.session.add(price_data)
+            session.add(price_data)
 
         if tariff_name == 'month':
             price_data.month = new_price
@@ -114,7 +113,7 @@ class TariffManager:
         if tariff_name in self.tariffs:
             self.tariffs[tariff_name].update_price(new_price)
 
-        await self.session.commit()
+        await session.commit()
         return True
 
     async def send_tariff_selection_message(self, cq: CallbackQuery):  # Отправляет сообщение с предложением выбрать тариф
@@ -142,8 +141,8 @@ tariff_manager: Optional['TariffManager'] = None
 
 async def init_tariffs(session: AsyncSession):
     global tariff_manager
-    tariff_manager = TariffManager(session)
-    await tariff_manager.load_prices()
+    tariff_manager = TariffManager()
+    await tariff_manager.load_prices(session)
 
 
 @router.callback_query(PrivateChatFilter(), F.data == 'choosing_tariff')
