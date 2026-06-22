@@ -131,7 +131,7 @@ class TariffManager:
             prices=[LabeledPrice(label="XTR", amount=tariff.price)],
             provider_token='',
             currency='XTR',
-            payload=f"sub_{cq.from_user.id}_{tariff.cq.data.split('_')[2]}"
+            payload=f"sub_{cq.from_user.id}_{cq.data.split('_')[2]}"
         )
 
 
