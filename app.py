@@ -6,7 +6,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from config import bot, dp
 from db.models import create_tables, DatabaseMiddleware, async_session
 from handlers.admin import without_adding, stats, setprice
-from handlers.user import start, tariff, purchased, sub_info, expiration_check
+from handlers.user import start, tariff, sub_info, expiration_check, stars_payment
 from handlers.user.expiration_check import check_subscriptions, check_expired_subscriptions
 
 logging.getLogger('aiogram').setLevel(logging.INFO)
@@ -18,7 +18,7 @@ async def main():
     await create_tables()
     dp.message.middleware(DatabaseMiddleware())
     dp.callback_query.middleware(DatabaseMiddleware())
-    dp.include_routers(start.router, without_adding.router, tariff.router, stats.router, purchased.router,
+    dp.include_routers(start.router, without_adding.router, tariff.router, stats.router, stars_payment.router,
                        sub_info.router, expiration_check.router, setprice.router)
 
     async with async_session() as session:

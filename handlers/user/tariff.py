@@ -3,7 +3,7 @@ from typing import Optional
 
 from aiogram import Router, F
 from aiogram.enums import ParseMode
-from aiogram.types import InlineKeyboardMarkup, CallbackQuery, InlineKeyboardButton
+from aiogram.types import InlineKeyboardMarkup, CallbackQuery, InlineKeyboardButton, LabeledPrice
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -125,15 +125,14 @@ class TariffManager:
 
     @staticmethod
     async def send_payment_message(cq: CallbackQuery, tariff: Tariff):  # Отправляет сообщение с информацией об оплате выбранного тарифа
-        kb = InlineKeyboardMarkup(inline_keyboard=[
-            [InlineKeyboardButton(text='✅ Оплатил(-а)', callback_data=tariff.callback_data)],
-            [InlineKeyboardButton(text='🔙 К выбору тарифа', callback_data='back_to_tariff')]
-        ]
+        await cq.message.answer_invoice(
+            title=f'Подписка: {tariff.name}',
+            description=f'Доступ к приватному каналу на {tariff.duration}',
+            prices=[LabeledPrice(label="XTR", amount=tariff.price)],
+            provider_token='',
+            currency='XTR',
+            payload=f"sub_{cq.from_user.id}_{tariff.cq.data.split('_')[2]}"
         )
-
-        text = tariff.get_payment_message()
-
-        await cq.message.edit_text(text=text, reply_markup=kb, parse_mode=ParseMode.HTML)
 
 
 tariff_manager: Optional['TariffManager'] = None
