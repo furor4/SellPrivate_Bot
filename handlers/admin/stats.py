@@ -21,7 +21,7 @@ async def statistics(message: Message, session: AsyncSession):
 
     text = (
         "📊 <b>Статистика продаж:</b>\n\n"
-        f"<blockquote><b>💵 Всего денег получено:</b> <code>{stats.total_money}₽</code></blockquote>\n"
+        f"<blockquote><b>⭐️ Всего звёзд получено:</b> <code>{stats.total_money}⭐️</code></blockquote>\n"
         f"<blockquote><b>🌙 Куплено месячных подписок:</b> <code>{stats.monthly_subs}</code></blockquote>\n"
         f"<blockquote><b>🌕 Куплено шестимесячных подписок:</b> <code>{stats.sixmonthly_subs}</code></blockquote>\n"
         f"<blockquote><b>🌚 Куплено годовых подписок:</b> <code>{stats.yearly_subs}</code></blockquote>")
