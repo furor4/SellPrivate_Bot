@@ -67,7 +67,7 @@ class TariffManager:
             )
         }
 
-    def get_tariff(self, tariff_name: str) -> Tariff | None:  # Возвращает объект тарифа по его имени
+    def get_tariff(self, tariff_name: str) -> Tariff:  # Возвращает объект тарифа по его имени
         return self.tariffs.get(tariff_name)
 
     def get_tariff_selection_keyboard(self) -> InlineKeyboardMarkup:  # Формирует клавиатуру с кнопками для выбора тарифа
