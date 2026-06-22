@@ -18,7 +18,7 @@ async def set_tariff_price(message: Message):
         tariff_name = args[1]
         new_price = int(args[2])
 
-        success = tariff_manager.update_tariff_price(tariff_name, new_price)
+        success = await tariff_manager.update_tariff_price(tariff_name, new_price)
         if success:
             await message.answer(f"✅ Цена тарифа {tariff_name} успешно изменена на {new_price}₽")
         else:
