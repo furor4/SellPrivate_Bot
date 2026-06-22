@@ -10,6 +10,8 @@ TOKEN = env.str('TOKEN')
 OWNER_ID = env.int('ADMIN')  # Владелец приватки
 CHANNEL_ID = env.int('PRIVATE_CHANNEL_ID')  # Айди канала приватки
 CHAT_ID = env.int('PRIVATE_CHAT_ID')  # Айди чата приватки (если существует)
+DATABASE_URL = env.str('DATABASE_URL')
+
 MSK = pytz.timezone('Europe/Moscow')  # Время по МСК
 bot = Bot(token=TOKEN)
 dp = Dispatcher(storage=MemoryStorage())

@@ -4,7 +4,8 @@ from sqlalchemy import Column, Integer, BigInteger, String, DateTime
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 
-DATABASE_URL = "postgresql+asyncpg://postgres:Пароль От Базы Данных@127.0.0.1:5432/Название Базы Данных"
+from config import DATABASE_URL
+
 engine = create_async_engine(DATABASE_URL, echo=False)
 
 Base = declarative_base()
