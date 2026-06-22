@@ -32,15 +32,6 @@ class Tariff:
         else:
             return from_date + timedelta(days=365)
 
-    def get_payment_message(self):
-        return (f'<blockquote><b>💰 Цена доступа:</b> <code>{self.price}₽</code></blockquote>'
-                f'\n<blockquote><b>🔋 Тариф:</b> <code>{self.duration}</code></blockquote>'
-                f'\n————————————————————————'
-                f'\n<blockquote><b>‼️ Пожалуйста, переведите указанную выше сумму на данные'
-                f' реквизиты:</b></blockquote>'
-                f'\n<blockquote>┖ УКАЖИТЕ СВОИ РЕКВИЗИТЫ</blockquote>'
-                f'\n<blockquote><i>🔻 После оплаты нажмите на кнопку снизу</i></blockquote>')
-
 
 # Управление тарифами (с возможностью добавить новые)
 class TariffManager:
