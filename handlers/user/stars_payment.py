@@ -26,9 +26,6 @@ async def successful_payment(message: Message, session: AsyncSession):
     if not user:
         return
 
-    invite_link_obj = await bot.create_chat_invite_link(chat_id=CHANNEL_ID, member_limit=1)
-    invite_link = invite_link_obj.invite_link
-
     tariff = tariff_manager.get_tariff(tariff_type)
     expiration_date = tariff.get_expiration_date(datetime.now(MSK))
 
@@ -53,6 +50,9 @@ async def successful_payment(message: Message, session: AsyncSession):
                              f"Ваша подписка успешно продлена до {expiration_date.strftime('%d.%m.%Y %H:%M')}.\n\n"
                              f"Ваша ссылка для входа: {user.link}", parse_mode=ParseMode.HTML)
     else:
+        invite_link_obj = await bot.create_chat_invite_link(chat_id=CHANNEL_ID, member_limit=1)
+        invite_link = invite_link_obj.invite_link
+
         user.link = invite_link
         await message.answer(f"🚀 <b>Поздравляю с приобретением подписки на {tariff.duration}</b>.\n\n"
                              f"Ваша ссылка для входа: {user.link}")
